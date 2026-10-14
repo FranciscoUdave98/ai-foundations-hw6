@@ -233,3 +233,6 @@
 ### Summary of changes
 
 - Prepared the repo: `.gitignore` keeps `.env`, `.venv`, caches, the zips, the joke smoke test, and scratch files out; `.env.example` has a placeholder key; `README.md` explains how to run the agent and has a results summary.
+- Added `.gitattributes` so git never rewrites line endings in `data/` (it would have corrupted the PDFs and changed the attack files). Switched the document links in `attack_results.md` and `red_team.md` to relative paths so they work from any clone.
+- Scanned the staged files for secrets (none) and checked that no `.env` is tracked. Pushed to the **public repo https://github.com/FranciscoUdave98/ai-foundations-hw6**.
+- Verified like a grader: a fresh clone has every file in the required layout (12 practice docs, 10 exam docs, 2 attacks, all `output/` files), the PDFs are byte-identical, and `python agent.py --doc data/practice_docs/p02_elmcity_quote.html` runs from the clone with only a `.env` added.

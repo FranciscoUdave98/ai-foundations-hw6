@@ -4,6 +4,8 @@ Francisco Udave · AI Foundations for Managers (Yale SOM)
 
 A PydanticAI agent on **`gpt-6-luna`** that reads one vendor document (an HTML quote or catalog page, a PDF quote, or an `.eml` email) and pulls out vendor, SKU, unit price, lead time, and minimum order. It then recommends buy or don't buy using the Campus Customs Shop Handbook. It is built to be cheap (the handbook is cached) and safe against vendor documents that hide instructions aimed at the AI.
 
+**Repo:** https://github.com/FranciscoUdave98/ai-foundations-hw6
+
 **Results page:** open `output/hw6_report.html` with a double-click. It works offline and needs no other files.
 
 ## Results at a glance
