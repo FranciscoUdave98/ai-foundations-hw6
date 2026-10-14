@@ -1,0 +1,24 @@
+{
+  "model": "gpt-6-luna",
+  "characters": 28903,
+  "words": 6127,
+  "tiktoken_o200k_base": 10058,
+  "live_calls": {
+    "baseline": {
+      "input_tokens": 13,
+      "cached_tokens": 0,
+      "output_tokens": 16
+    },
+    "handbook_run_1": {
+      "input_tokens": 10077,
+      "cached_tokens": 0,
+      "output_tokens": 5
+    },
+    "handbook_run_2": {
+      "input_tokens": 10077,
+      "cached_tokens": 10061,
+      "output_tokens": 5
+    }
+  },
+  "handbook_tokens_live": 10064
+}

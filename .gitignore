@@ -1,0 +1,35 @@
+# Secrets — never commit API keys
+.env
+.env.*
+!.env.example
+
+# Virtual environment (rebuild with: python -m venv .venv && pip install -r requirements.txt)
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# OS / editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Original download zip (data/ is unzipped from it)
+data.zip
+
+# Local setup smoke test (not part of the homework; it uses gpt-5.6-luna)
+joke.py
+today_joke.txt
+
+# Scratch logs from long test runs
+output/_*.log
+*.json.tmp
+
+# Attack files are unzipped into data/my_attacks/
+red_team_attacks.zip
+
+# Per-setup run caches from defense_test.py
+output/_*.json

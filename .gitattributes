@@ -1,0 +1,4 @@
+# Keep vendor documents byte-for-byte (PDF offsets and hidden-text tricks must not change)
+data/** -text
+*.pdf binary
+*.eml -text
