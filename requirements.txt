@@ -1,6 +1,7 @@
-openai>=1.50.0
-python-dotenv>=1.0.1
-tiktoken>=0.7
-pydantic-ai-slim[openai]>=2.0
-pymupdf>=1.24
-beautifulsoup4>=4.12
+# Tested with Python 3.13 and these versions (October 2026).
+openai>=3.31,<4               # 3.x uses httpx2, which agent.py hooks to log raw token usage
+pydantic-ai-slim[openai]>=2.56,<3
+python-dotenv>=1.0
+tiktoken>=0.7                 # Problem 2 offline token count
+pymupdf>=1.28                 # PDF reading and hidden-text detection
+beautifulsoup4>=4.12          # HTML and email reading

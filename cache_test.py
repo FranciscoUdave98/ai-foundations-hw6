@@ -1,14 +1,20 @@
 """Problem 4: run every practice document with and without prompt caching.
 
-    python cache_test.py
+    python cache_test.py                    # the final defended agent (default)
+    python cache_test.py --defenses none    # the undefended agent
 
 Saves every model call (setup, document, every token count the API reported, dollars
 from data/prices.json) to output/cache_test.json. The no-cache setup runs first, so
 it can't benefit from anything the cache setup stores.
+
+The top-level "calls" and "documents" in cache_test.json are the original Problem 4 run
+(the Problem 3 agent: 2 model calls per document). Reruns are stored under
+"reruns" -> <defenses>, so the original numbers are never overwritten.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 from datetime import datetime
 
@@ -50,13 +56,16 @@ def call_entry(setup: str, doc: str, n: int, raw: dict) -> dict:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--defenses", default="all", help="all (default), none, or a mix of code,design,prompt")
+    defenses_on = agent.Defenses.parse(parser.parse_args().defenses)
     calls, docs = [], []
     for setup, cache in (("no_cache", False), ("cache", True)):
         print(f"\n===== {setup} =====")
         for path in DOCS:
             rel = path.relative_to(agent.HW_DIR).as_posix()
             start = len(agent.api_calls)
-            decision = agent.run(rel, cache=cache).model_dump()
+            decision = agent.run(rel, cache=cache, defenses_on=defenses_on).model_dump()
             stale = [r["portkey_cache_status"] for r in agent.api_calls[start:] if r["portkey_cache_status"] == "HIT"]
             if stale:
                 raise RuntimeError(f"{path.name}: Portkey replayed a cached answer, so the token counts are not live")
@@ -76,14 +85,18 @@ def main() -> None:
             })
             print(f"--- {path.name}: {docs[-1]['cost_usd']:.6f} USD, matches key: {not wrong} {wrong or ''}\n")
 
-    OUT.write_text(json.dumps({
+    data = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
+    data.setdefault("reruns", {})[defenses_on.name] = {
         "run_at": datetime.now().isoformat(timespec="seconds"),
         "model": agent.MODEL_NAME,
-        "prices_per_1m": json.loads(agent.PRICES_PATH.read_text(encoding="utf-8"))[agent.MODEL_NAME],
+        "defenses": defenses_on.name,
         "calls": calls,
         "documents": docs,
-    }, indent=2), encoding="utf-8")
-    print(f"Saved {len(calls)} calls to {OUT.relative_to(agent.HW_DIR).as_posix()}")
+    }
+    tmp = OUT.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    tmp.replace(OUT)
+    print(f"Saved {len(calls)} calls to {OUT.relative_to(agent.HW_DIR).as_posix()} under reruns/{defenses_on.name}")
 
 
 if __name__ == "__main__":

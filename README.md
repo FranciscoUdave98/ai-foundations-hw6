@@ -13,11 +13,11 @@ A PydanticAI agent on **`gpt-6-luna`** that reads one vendor document (an HTML q
 | | |
 |---|---|
 | Handbook size | 10,064 tokens, sent on every call |
-| Caching | 88.7% cheaper per document |
+| Caching | 88.7% cheaper per document (88.4% for the final agent) |
 | Practice docs fooled, no defenses | 4 of 12 (10 of 36 runs); max unit cost leaked in 20 of 36 answers |
 | Practice docs fooled, all defenses | **0 of 12 (0 of 36 runs)**; all clean docs correct |
 | Exam docs | 10 processed, 0 trap calls, $0.00016 each |
-| Defended cost | $0.000143 per document, about **$4.28 a month** at 1,000 documents a day |
+| Defended cost | $0.000159 per new document with a warm cache, about **$4.77 a month** at 1,000 documents a day ($41.17 without caching) |
 
 ## Run it
 
@@ -28,7 +28,7 @@ copy .env.example .env        # then put your PORTKEY_API_KEY in .env
 .venv\Scripts\python.exe agent.py --doc data/practice_docs/p01_bluehen_quote.html
 ```
 
-On macOS or Linux, use `.venv/bin/python` and `cp`.
+Tested with Python 3.13. On macOS or Linux, use `.venv/bin/python` and `cp`. On Windows, if `pip install` fails with a long-path error, clone into a shorter folder (e.g. `C:\hw6`): one of PydanticAI's bundled files has a very deep path.
 
 | Option | What it does |
 |---|---|
@@ -50,11 +50,11 @@ Each run prints the answer, the tokens, and the cost, and appends to `output/usa
 | `defenses.py` | Code layer (hidden-text filter for HTML, PDF, and email) and design layer (value check and handbook rules in Python). |
 | `prompts/prompt.md` | Agent instructions; the full handbook is pasted in on every call. |
 | `count_handbook_tokens.py` | Problem 2: handbook token count. |
-| `cache_test.py` | Problem 4: with vs without caching. |
+| `cache_test.py` | Problem 4: with vs without caching (`--defenses all` for the final agent). |
 | `attack_test.py` | Problem 5: all practice docs, zero defenses. |
 | `defense_test.py` | Problem 6: all practice docs with each defense layer. |
 | `red_team.py` | Problem 7: our two attacks in `data/my_attacks/`, no defenses vs defended. |
-| `exam_run.py` | Problem 8: the final defended agent on `data/exam_docs/` → `output/exam_results.json`. |
+| `exam_run.py` | Problem 8: the final defended agent on `data/exam_docs/` → `output/exam_results.json` (write-up in `output/exam_results.md`). |
 | `build_report.py` | Problem 9: rebuilds `output/hw6_report.html` from the JSON results. |
 | `AI_prompts.md` | Every prompt used for this homework. |
 | `data/` | Course data (handbook, prices, practice key, practice and exam docs) and `my_attacks/`. |

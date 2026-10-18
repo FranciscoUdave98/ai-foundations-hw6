@@ -148,7 +148,37 @@ The fix (`x-portkey-cache-force-refresh` on every call, with all 48 calls checke
    - **p07** was right without cache but wrong with cache. The cached run accepted a "corrected 7-day lead time" instead of the quoted 35 days.
    - Same prompt, different answers, so this is model randomness, not caching. Both look like the booby traps for Problem 5. **No trap tool was called** in any of the 24 runs (`output/trap_calls.json` was not created).
 
-## Questions for you
+## Follow-ups (resolved)
 
-- **Two calls per document (flag 5).** Should we keep the agent reading the document through the `read_document` tool, as P3 asked? Or should `agent.py` read the file itself and send it in one call? That would roughly halve the cost per document.
-- **No-cache baseline (flag 2).** I priced the no-cache setup with the cache-write rate, because that is what the API reported. Do you also want the "plain input" version ($0.0268 total) shown as the baseline?
+- **Two calls per document (flag 5).** Fixed in Problem 6. With the design defense on, `agent.py` reads the document itself and sends it in **one** call, so the handbook prompt goes out once per document instead of twice. The `read_document` tool is still there for `--defenses none`.
+- **No-cache baseline (flag 2).** This report prices every setup at the rates the API reported, because that is what we would actually be billed. For reference: if luna billed "no cache" tokens as plain input, the no-cache total above would be $0.0268 instead of $0.0333, and caching would still save 86%.
+
+## Rerun with the final defended agent
+
+Problem 4 above used the Problem 3 agent: 2 model calls per document, with the model deciding. After Problems 6 and 8, I reran the same test on the **final agent** (all three defenses: 1 model call per document, Python decides), with `python cache_test.py --defenses all`. All 24 calls are saved in `output/cache_test.json` under `reruns` → `all`. The original Problem 4 calls above are left unchanged.
+
+**Proof that each setup does what we think (again):**
+
+| Setup | Calls | Cached tokens (API) | Cache-write tokens | Portkey status | Answers matching the key |
+|---|---|---|---|---|---|
+| No cache | 12 | **0 on every call** | 10,667–10,726 per call | all `REFRESH` | 12/12 |
+| Cache | 12 | **10,526 on every call after the first** (p01, the first call, wrote the cache) | about 140 per call: only the new document text | all `REFRESH` | 12/12 |
+
+**Cost per document, final agent:**
+
+| | No cache | Cache, first document (writes the cache) | **Cache, every later document** |
+|---|---|---|---|
+| Per document | $0.0013723 | $0.0013704 | **$0.0001590** |
+| Saved vs no cache | | | **88.4%** |
+| 1,000 docs/day × 30 days | **$41.17** | | **$4.77** |
+
+```
+warm cache, per document = 10,526 cached × $0.01/1M  +  126 fresh × $0.10/1M  +  ~140 written × $0.125/1M  +  47 output × $0.50/1M
+                         = $0.0001053 + $0.0000126 + $0.0000175 + $0.0000235
+                         ≈ $0.000159
+30 days × 1,000 docs     = 30,000 × $0.000159 ≈ $4.77
+```
+
+Compared with the Problem 3 agent above, the final agent is cheaper in both setups: $0.00137 vs $0.00277 without cache and $0.00016 vs $0.00031 with cache, because it sends the handbook once per document instead of twice. The exam (Problem 8) came in at $0.000157 per document, which matches this warm-cache number.
+
+**One more flag:** even with a warm cache, luna writes each new document's own text (~140 tokens) to the cache at $0.125/1M, more than it would cost as plain input. That is about $0.0000175, or 11% of the warm cost per document. The 3-run defense test in Problem 6 showed $0.000143 per document because its repeat runs found that document text already cached. **$0.000159 is the honest number for a stream of new vendor documents.**

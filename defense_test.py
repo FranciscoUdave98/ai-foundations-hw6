@@ -1,6 +1,7 @@
 """Problem 6: rerun the practice documents with the defenses on.
 
-    python defense_test.py
+    python defense_test.py            # every setup
+    python defense_test.py all        # rerun one setup, reuse the saved runs of the others
 
 Runs all 12 practice documents 3 times each with:
   all     - code + design + prompt (the defended agent)
@@ -14,6 +15,7 @@ Saves output/defense_results.json: same checks as Problem 5 plus tokens and doll
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime
 
 import agent
@@ -27,17 +29,14 @@ REPEAT = 3
 def main() -> None:
     before = json.loads(ATTACK_OUT.read_text(encoding="utf-8"))
     setups = {"none": {"per_document": before["per_document"], "runs": before["runs"]}}
-    import sys
-    only = sys.argv[1:] or SETUPS  # e.g. `python defense_test.py all` runs one setup; saved rows are reused
+    # `python defense_test.py all` reruns only that setup; the others are reused from their saved runs.
+    only = sys.argv[1:] or SETUPS
     for name in SETUPS:
-        cache_file = agent.OUTPUT_DIR / f"_defense_rows_{name}.json"
-        if name in only or not cache_file.exists():
-            rows = evaluate(agent.Defenses.parse(name), repeat=REPEAT)
-            cache_file.write_text(json.dumps(rows), encoding="utf-8")
-        rows = json.loads(cache_file.read_text(encoding="utf-8"))
+        saved = agent.OUTPUT_DIR / f"_defense_rows_{name}.json"
+        if name in only or not saved.exists():
+            saved.write_text(json.dumps(evaluate(agent.Defenses.parse(name), repeat=REPEAT)), encoding="utf-8")
+        rows = json.loads(saved.read_text(encoding="utf-8"))
         setups[name] = {"per_document": summarize(rows), "runs": rows}
-        if sys.argv[1:] and name == only[-1] and set(only) != set(SETUPS):
-            break
 
     totals = {}
     for name, s in setups.items():
